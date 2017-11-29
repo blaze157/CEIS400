@@ -2,6 +2,7 @@
 #define DATABASE
 
 #include <mysql++/mysql++.h>
+#include "ItemTable.h"
 #include <string>
 
 class DatabaseConnector
@@ -11,8 +12,10 @@ public:
 	virtual ~DatabaseConnector();
 
 	//employee functions
+	int getEmployeeId(std::string username);//get id from username
 	std::string getEmployeeName(int id);//get name from id
 	void newEmployee(std::string username, std::string name, std::string password);//create a new employee in the database
+	void removeEmployee(int id);//remove employee from the database
 	ItemTable getItemsTaken(int id);//a list of the items that have been checked out by [id]
 	void employeeTakeItem(int employeeId, int itemId);//check out item
 	void employeeReturnItem(int employeeId, int itemId);//put back item

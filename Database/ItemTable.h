@@ -2,6 +2,8 @@
 #ifndef ITEM_TABLE
 #define ITEM_TABLE
 
+#include "iostream"
+
 class ItemTable
 {
 private:

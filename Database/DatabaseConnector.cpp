@@ -15,56 +15,93 @@ DatabaseConnector::~DatabaseConnector()
 	delete conn;
 }
 
+int DatabaseConnector::getEmployeeId(std::string username)
+{
+	mysqlpp::Query select(conn);
+	try
+	{
+		select << "select id from employees where username='" << username << "'";
+		mysqlpp::StoreQueryResult result = select.store();
+
+		if(result)
+		{
+			return result[0]["id"];
+		}
+	}
+	catch(...)
+	{
+		std::cout << select.error() << std::endl;
+	}
+}
 std::string DatabaseConnector::getEmployeeName(int id)
 {
-	//TODO impliment this
-	std::ostringstream idConvert;
-	idConvert << id;
-
-	mysqlpp::Query query = conn->query("select name from employees where id=" + idConvert.str());
-	mysqlpp::StoreQueryResult result = query.store();
-
-	if(result)
+	mysqlpp::Query select(conn);
+	try
 	{
-		std::string returnString;
-		result[0]["name"].to_string(returnString);
-		return returnString;
+		select << "select name from employees where id=" << id;
+		mysqlpp::StoreQueryResult result = select.store();
+
+		if(result)
+		{
+			std::string returnString;
+			result[0]["name"].to_string(returnString);
+			return returnString;
+		}
 	}
-	else
+	catch(...)
 	{
-		std::cout << "query error: employees name from id " << id << " " << query.error() << std::endl;
-		return "error";
-	}
-}
-std::string DatabaseConnector::getItemLocation(int itemId)
-{
-	//TODO impliment this
-	std::ostringstream idConvert;
-	idConvert << id;
-
-	mysqlpp::Query query = conn->query("select job from employees where id=" + idConvert.str());
-	mysqlpp::StoreQueryResult result = query.store();
-
-	if(result)
-	{
-		std::string returnString;
-		result[0]["job"].to_string(returnString);
-		return returnString;
-	}
-	else
-	{
-		std::cout << "query error: employees job from id " << id << " " << query.error() << std::endl;
-		return "error";
+		std::cout << select.error() << std::endl;
 	}
 }
 
-void DatabaseConnector::newEmployee(std::string name, std::string password)
+void DatabaseConnector::newEmployee(std::string username, std::string name, std::string password)
+{
+	//TODO when same username is given an extra entry is inserted into employees table
+	mysqlpp::Query create(conn);
+	try
+	{
+		create << "create user '" << username << "'@'%' identified by '" << password << "'";
+		create.exec();
+	}
+	catch(...)
+	{
+		std::cout << create.error() << std::endl;
+	}
+
+	mysqlpp::Query grant(conn);
+	try
+	{
+		grant << "grant all privileges on ceis400.* to '" << username << "'@'%'";
+		grant.exec();
+	}
+	catch(...)
+	{
+		std::cout << grant.error() << std::endl;
+	}
+
+	mysqlpp::Query insert(conn);
+	try
+	{
+		insert << "insert into employees (username, name) values('"<< username << "', '" << name << "')";
+		insert.exec();
+	}
+	catch(...)
+	{
+		std::cout << insert.error() << std::endl;
+	}
+
+	mysqlpp::Query table(conn);
+	try
+	{
+		table << "create table checkout"<< getEmployeeId(username) <<"(itemId int)";
+		table.exec();
+	}
+	catch(...)
+	{
+		std::cout << table.error() << std::endl;
+	}
+}
+void DatabaseConnector::removeEmployee(int id)
 {
 	//TODO impliment this
-	std::ostringstream idConvert;
-	idConvert << id;
-	mysqlpp::Query query(conn);
-	query << "insert into employees values (" << id << ", '" << name << "', '" << job << "')";
-	query.exec();
-	std::cout << query.error() << std::endl;
 }
