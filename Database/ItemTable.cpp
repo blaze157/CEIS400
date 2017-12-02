@@ -3,10 +3,11 @@
 
 ItemTable::ItemTable()
 {}
-ItemTable::ItemTable(int* ids, std::string* names, std::string* locations, int* counts, int number)
+ItemTable::ItemTable(int* ids, std::string* names, std::string* descriptions, std::string* locations, int* counts, int number)
 {
 	this->ids = new int[number];
 	this->names = new std::string[number];
+	this->descriptions = new std::string[number];
 	this->locations = new std::string[number];
 	this->counts = new int[number];
 	this->number = number;
@@ -15,6 +16,7 @@ ItemTable::ItemTable(int* ids, std::string* names, std::string* locations, int* 
 	{
 		this->ids[i] = ids[i];
 		this->names[i] = names[i];
+		this->descriptions[i] = descriptions[i];
 		this->locations[i] = locations[i];
 		this->counts[i] = counts[i];
 	}
@@ -23,6 +25,7 @@ ItemTable::~ItemTable()
 {
 	delete[] ids;
 	delete[] names;
+	delete[] descriptions;
 	delete[] locations;
 	delete[] counts;
 }
@@ -42,6 +45,13 @@ std::string ItemTable::getName(int pos)
 {
 	if(pos>=0 && pos<number)
 		return names[pos];
+	else
+		return "error pos out of bounds";
+}
+std::string ItemTable::getDescription(int pos)
+{
+	if(pos>=0 && pos<number)
+		return descriptions[pos];
 	else
 		return "error pos out of bounds";
 }

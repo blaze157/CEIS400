@@ -24,9 +24,11 @@ public:
 	std::string getItemLocation(int itemId);//get location from id
 	ItemTable getItemList();//get list of all items
 	int getItemAvailible(int itemId);//how many of item are availible for checkout
-	void newItem(std::string name, std::string description, int numAvailable);//adds a new item to the database
+	void newItem(std::string name, std::string description, int numAvailable, std::string location);//adds a new item to the database
 	void addItems(int id, int number);//add [number] items of id [id] to database
 	void subtractItems(int id, int number);//remove [number] items of id [id] from database
+
+	//I should add a delete item function
 
 private:
 	mysqlpp::Connection *conn;

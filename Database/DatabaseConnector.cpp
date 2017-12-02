@@ -103,26 +103,59 @@ void DatabaseConnector::newEmployee(std::string username, std::string name, std:
 }
 void DatabaseConnector::removeEmployee(int id)
 {
-	//TODO impliment this
+	mysqlpp::Query user(conn);
+	try
+	{
+		user << "drop user '" << getEmployeeName(id) << "'@'%'";
+		user.exec();
+	}
+	catch(...)
+	{
+		std::cout << user.error() << std::endl;
+	}
+
+	mysqlpp::Query del(conn);
+	try
+	{
+		del << "delete from employees where id=" << id;
+		del.exec();
+	}
+	catch(...)
+	{
+		std::cout << del.error() << std::endl;
+	}
+
+	mysqlpp::Query table(conn);
+	try
+	{
+		table << "drop table checkout"<< id;
+		table.exec();
+	}
+	catch(...)
+	{
+		std::cout << table.error() << std::endl;
+	}
 }
 
 ItemTable DatabaseConnector::getItemsTaken(int id)
 {
-	//TODO test this
 	ItemTable* table;
 
 	mysqlpp::Query select(conn);
 	try
 	{
-		select << "select * from items where id=(select * from checkout" << id << ")";
+		select << "select checkout" << id << ".id, items.name, items.location, items.description, items.numAvailable " <<
+		"from checkout" << id << 
+		" left join items on checkout" << id << ".id = items.id";
 		mysqlpp::StoreQueryResult result = select.store();
-
 		if(result)
 		{
 			int number = result.num_rows();
+			std::cout << "got rows: " << number << std::endl;
 
 			int ids[number];
 			std::string names[number];
+			std::string descriptions[number];
 			std::string locations[number];
 			int count[number];
 
@@ -131,22 +164,22 @@ ItemTable DatabaseConnector::getItemsTaken(int id)
 				ids[i] = result[i]["id"];
 				result[i]["name"].to_string(names[i]);
 				result[i]["location"].to_string(locations[i]);
-				count[i] = result[i]["count"];
+				result[i]["description"].to_string(descriptions[i]);
+				count[i] = result[i]["numAvailable"];
 			}
 
-			table = new ItemTable(ids, names, locations, count, number);
+			table = new ItemTable(ids, names, descriptions, locations, count, number);
 		}
 	}
 	catch(...)
 	{
-		std::cout << select.error() << std::endl;
+		std::cout << "SQL error getItemsTaken: " << select.error() << std::endl;
 	}
 
 	return *table;
 }
-void DatabaseConnector::employeeTakeItem(int employeeId, int itemId)
+void DatabaseConnector::employeeTakeItem(int employeeId, int itemId)// Why didn't I put a count on this?
 {
-	//TODO test this
 	mysqlpp::Query insert(conn);
 	try
 	{
@@ -158,9 +191,8 @@ void DatabaseConnector::employeeTakeItem(int employeeId, int itemId)
 		std::cout << insert.error() << std::endl;
 	}
 }
-void DatabaseConnector::employeeReturnItem(int employeeId, int itemId)
+void DatabaseConnector::employeeReturnItem(int employeeId, int itemId)// This returns all of the same items
 {
-	//TODO test this
 	mysqlpp::Query del(conn);
 	try
 	{
@@ -195,6 +227,7 @@ ItemTable DatabaseConnector::getItemList()
 
 			int ids[number];
 			std::string names[number];
+			std::string descriptions[number];
 			std::string locations[number];
 			int count[number];
 
@@ -202,11 +235,12 @@ ItemTable DatabaseConnector::getItemList()
 			{
 				ids[i] = result[i]["id"];
 				result[i]["name"].to_string(names[i]);
+				result[i]["description"].to_string(descriptions[i]);
 				result[i]["location"].to_string(locations[i]);
-				count[i] = result[i]["count"];
+				count[i] = result[i]["numAvailable"];
 			}
 
-			table = new ItemTable(ids, names, locations, count, number);
+			table = new ItemTable(ids, names, descriptions, locations, count, number);
 		}
 	}
 	catch(...)
@@ -216,7 +250,7 @@ ItemTable DatabaseConnector::getItemList()
 
 	return *table;
 }
-int DatabaseConnector::getItemAvailible(int itemId)
+int DatabaseConnector::getItemAvailible(int itemId)// this doesn't work at all but it runs
 {
 	int number = 0;
 	mysqlpp::StoreQueryResult users;
@@ -224,12 +258,12 @@ int DatabaseConnector::getItemAvailible(int itemId)
 	mysqlpp::Query count(conn);
 	try
 	{
-		count << "select count from items where id=" << itemId;
+		count << "select numAvailable from items where id=" << itemId;
 		mysqlpp::StoreQueryResult result = count.store();
 
 		if(result)
 		{
-			number = result[0]["count"];
+			number = result[0]["numAvailable"];
 		}
 	}
 	catch(...)
@@ -269,13 +303,12 @@ int DatabaseConnector::getItemAvailible(int itemId)
 	}
 }
 
-void DatabaseConnector::newItem(std::string name, std::string description, int numAvailable)
+void DatabaseConnector::newItem(std::string name, std::string description, int numAvailable, std::string location)
 {
-	//TODO test this
 	mysqlpp::Query insert(conn);
 	try
 	{
-		insert << "insert into items (name, description, count) values ('" << name << "', '" << description << "', " << numAvailable << ")";
+		insert << "insert into items (name, description, numAvailable, location) values ('" << name << "', '" << description << "', " << numAvailable << ", '" << location << "')";
 		insert.exec();
 	}
 	catch(...)
@@ -286,18 +319,17 @@ void DatabaseConnector::newItem(std::string name, std::string description, int n
 
 void DatabaseConnector::addItems(int id, int number)
 {
-	//TODO test this
 	int current = -1;
 
 	mysqlpp::Query select(conn);
 	try
 	{
-		select << "select count from items where id=" << id;//get current value
+		select << "select numAvailable from items where id=" << id;//get current value
 		mysqlpp::StoreQueryResult result = select.store();
 
 		if(result)
 		{
-			current = result[0]["count"];
+			current = result[0]["numAvailable"];
 		}
 	}
 	catch(...)
@@ -310,7 +342,7 @@ void DatabaseConnector::addItems(int id, int number)
 		mysqlpp::Query add(conn);
 		try
 		{
-			add << "update items set count=" << current + number << " where id=" << id;
+			add << "update items set numAvailable=" << current + number << " where id=" << id;
 			add.exec();
 		}
 		catch(...)
@@ -326,12 +358,12 @@ void DatabaseConnector::subtractItems(int id, int number)
 	mysqlpp::Query select(conn);
 	try
 	{
-		select << "select count from items where id=" << id;//get current value
+		select << "select numAvailable from items where id=" << id;//get current value
 		mysqlpp::StoreQueryResult result = select.store();
 
 		if(result)
 		{
-			current = result[0]["count"];
+			current = result[0]["numAvailable"];
 		}
 	}
 	catch(...)
@@ -346,12 +378,12 @@ void DatabaseConnector::subtractItems(int id, int number)
 		{
 			if(current - number >= 0)//cant have less than 0
 			{
-				add << "update items set count=" << current - number << " where id=" << id;
+				add << "update items set numAvailable=" << current - number << " where id=" << id;
 				add.exec();
 			}
 			else
 			{
-				add << "update items set count=" << 0 << " where id=" << id;
+				add << "update items set numAvailable=" << 0 << " where id=" << id;
 				add.exec();
 			}
 		}
