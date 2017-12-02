@@ -1,7 +1,3 @@
-#include <string>
-#include <vector>
-#include "Equipment.h"
-
 class Employee {
 public:
 	Employee();
@@ -11,9 +7,9 @@ public:
 	void setID(int);
 	int getSkillClass();
 	void setSkillClass(int);
-	void printEquipment();
-	void checkOutEquipment();
-	void checkInEquipment();
+	std::string printEquipment();
+	void checkOutEquipment(Equipment);
+	void checkInEquipment(Equipment);
 	bool IDInUse(int);
 	bool inputValid(int, std::string); // ID,Password
 
