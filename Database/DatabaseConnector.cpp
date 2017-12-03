@@ -150,14 +150,14 @@ ItemTable DatabaseConnector::getItemsTaken(int id)
 		mysqlpp::StoreQueryResult result = select.store();
 		if(result)
 		{
-			int number = result.num_rows();
+			const int number = result.num_rows();
 			std::cout << "got rows: " << number << std::endl;
 
-			int ids[number];
-			std::string names[number];
-			std::string descriptions[number];
-			std::string locations[number];
-			int count[number];
+			int *ids = new int[number];
+			std::string *names = new std::string[number];
+			std::string *descriptions = new std::string[number];
+			std::string *locations = new std::string[number];
+			int *count = new int[number];
 
 			for(int i=0; i<number; i++)
 			{
@@ -169,6 +169,13 @@ ItemTable DatabaseConnector::getItemsTaken(int id)
 			}
 
 			table = new ItemTable(ids, names, descriptions, locations, count, number);
+			delete[] ids;
+			delete[] names;
+			delete[] descriptions;
+			delete[] locations;
+			delete[] count;
+
+			return *table;
 		}
 	}
 	catch(...)
@@ -176,6 +183,7 @@ ItemTable DatabaseConnector::getItemsTaken(int id)
 		std::cout << "SQL error getItemsTaken: " << select.error() << std::endl;
 	}
 
+	table = new ItemTable;
 	return *table;
 }
 void DatabaseConnector::employeeTakeItem(int employeeId, int itemId)// Why didn't I put a count on this?
@@ -209,6 +217,7 @@ void DatabaseConnector::employeeReturnItem(int employeeId, int itemId)// This re
 std::string DatabaseConnector::getItemLocation(int itemId)
 {
 	//do we still need this?
+	return 0;
 }
 ItemTable DatabaseConnector::getItemList()
 {
@@ -225,11 +234,11 @@ ItemTable DatabaseConnector::getItemList()
 		{
 			int number = result.num_rows();
 
-			int ids[number];
-			std::string names[number];
-			std::string descriptions[number];
-			std::string locations[number];
-			int count[number];
+			int *ids = new int[number];
+			std::string *names = new std::string[number];
+			std::string *descriptions = new std::string[number];
+			std::string *locations = new std::string[number];
+			int *count = new int[number];
 
 			for(int i=0; i<number; i++)
 			{
@@ -241,6 +250,12 @@ ItemTable DatabaseConnector::getItemList()
 			}
 
 			table = new ItemTable(ids, names, descriptions, locations, count, number);
+			delete[] ids;
+			delete[] names;
+			delete[] descriptions;
+			delete[] locations;
+			delete[] count;
+			return *table;
 		}
 	}
 	catch(...)
@@ -248,6 +263,7 @@ ItemTable DatabaseConnector::getItemList()
 		std::cout << select.error() << std::endl;
 	}
 
+	table = new ItemTable;
 	return *table;
 }
 int DatabaseConnector::getItemAvailible(int itemId)// this doesn't work at all but it runs
@@ -301,6 +317,7 @@ int DatabaseConnector::getItemAvailible(int itemId)// this doesn't work at all b
 			std::cout << add.error() << std::endl;
 		}
 	}
+	return number;
 }
 
 void DatabaseConnector::newItem(std::string name, std::string description, int numAvailable, std::string location)
