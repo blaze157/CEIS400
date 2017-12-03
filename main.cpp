@@ -8,6 +8,8 @@ using namespace std;
 
 std::vector<Employee> employees;
 std::vector<Depot> depots;
+std::string username;
+std::string pass;
 bool logged = false;
 bool quit = false;
 void createAccount(DatabaseConnector);
@@ -17,11 +19,9 @@ void checkInEquipment(DatabaseConnector);
 void printEquipment(DatabaseConnector);
 void terminateEmployee(DatabaseConnector);
 void printEmployeeInfo(DatabaseConnector);
+void showEquipmentList();
 void main()
 {
-
-	std::string username;
-	std::string pass;
 	bool valid = false;
 	while (!valid)
 	{
@@ -37,62 +37,63 @@ void main()
 		logged = true;
 	}
 	std::cout << "Connecting to Database" << endl;
-	DatabaseConnector dbc("ceis400", "db4free.net", username,pass);
+	DatabaseConnector dbc("ceis400", "db4free.net", username, pass);
 	std::cout << "Connected" << endl;
-	Employee employee(dbc.getEmployeeName(dbc.getEmployeeId(username)),pass,dbc.getEmployeeId(username),3);
+	Employee employee(dbc.getEmployeeName(dbc.getEmployeeId(username)), pass, dbc.getEmployeeId(username), 3);
 	employees.push_back(employee);
 	int input;
-		while (logged)
+	while (logged)
+	{
+		std::cout << "Main Menu" << endl
+			<< "1. Check Out Equipment" << endl
+			<< "2. Check In Equipment" << endl
+			<< "3. Print Equipment" << endl
+			<< "4. Manager Menu" << endl
+			<< "5. Logout" << endl;
+		std::cin >> input;
+		switch (input)
 		{
-			std::cout << "Main Menu" << endl
-				<< "1. Check Out Equipment" << endl
-				<< "2. Check In Equipment" << endl
-				<< "3. Print Equipment" << endl
-				<< "4. Manager Menu" << endl
-				<< "5. Logout" << endl;
+		case 1:
+			checkOutEquipment(dbc);
+			break;
+		case 2:
+			checkInEquipment(dbc);
+			break;
+		case 3:
+			printEquipment(dbc);
+			break;
+		case 4:
+		{
+			std::cout << "Manager Menu" << endl
+				<< "1. Create New Account" << endl
+				<< "2. Print Employee info" << endl
+				<< "3. Terminate Employee" << endl
+				<< "4. Exit" << endl;
+			std::cin.ignore();
 			std::cin >> input;
 			switch (input)
 			{
 			case 1:
-				checkOutEquipment(dbc);
+				createAccount(dbc);
 				break;
 			case 2:
-				checkInEquipment(dbc);
+				//print employee info
+				printEmployeeInfo(dbc);
 				break;
 			case 3:
-				printEquipment(dbc);
+				//terminate employee
+				terminateEmployee(dbc);
 				break;
-			case 4:
-			{
-				std::cout << "Manager Menu" << endl
-					<< "1. Create New Account" << endl
-					<< "2. Print Employee info" << endl
-					<< "3. Terminate Employee" << endl
-					<< "4. Exit" << endl;
-				std::cin >> input;
-				switch (input)
-				{
-				case 1:
-					createAccount(dbc);
-					break;
-				case 2:
-					//print employee info
-					printEmployeeInfo(dbc);
-					break;
-				case 3:
-					//terminate employee
-					terminateEmployee(dbc);
-					break;
-				default:
-					break;
-				}
-				break;
-			}
 			default:
-				logged = false;
 				break;
 			}
+			break;
 		}
+		default:
+			logged = false;
+			break;
+		}
+	}
 }
 
 void createAccount(DatabaseConnector d)
@@ -100,7 +101,7 @@ void createAccount(DatabaseConnector d)
 	DatabaseConnector dbc = d;
 	std::string name;
 	std::string pass;
-	std::string username;
+	std::string user;
 	int id;
 	int skill;
 	std::cout << "Enter Name (first last)" << endl;
@@ -109,16 +110,16 @@ void createAccount(DatabaseConnector d)
 	std::cout << "Enter Password" << endl;
 	getline(std::cin, pass);
 	std::cout << "Enter Username" << endl;
-	getline(std::cin, username);
+	getline(std::cin, user);
 	std::cout << "Enter Skill Class" << endl;
 	std::cin >> skill;
 	std::cout << "creating account" << endl;
-	dbc.newEmployee(username, name, pass);
+	dbc.newEmployee(user, name, pass);
 	std::cout << "account created" << endl;
-	id = dbc.getEmployeeId(username);
+	id = dbc.getEmployeeId(user);
 	Employee e(name, pass, id, skill);
 	employees.push_back(e);
-	
+
 }
 void managerLogin(DatabaseConnector d)
 {
@@ -132,18 +133,26 @@ void managerLogin(DatabaseConnector d)
 	//query database to see if valid
 	valid = true;
 	//if not valid, valid remains false	
-if (valid)
-{
-	logged = true;
-}
+	if (valid)
+	{
+		logged = true;
+	}
 }
 void checkOutEquipment(DatabaseConnector d)
 {
+	showEquipmentList();
 	int equipmentId;
 	std::cout << "Enter Equipment ID" << endl;
 	std::cin >> equipmentId;
-	d.employeeTakeItem(1, equipmentId);//1 should be id
-	//employees.back().checkOutEquipment();
+	if (depots[0].checkInventory(equipmentId))
+	{
+		d.employeeTakeItem(d.getEmployeeId(username), equipmentId);
+		depots[0].removeEquipment(equipmentId);
+	}
+	else if (depots[1].checkInventory(equipmentId))
+	{
+		d.employeeTakeItem(d.getEmployeeId(username), equipmentId);
+	}
 }
 void checkInEquipment(DatabaseConnector d)
 {
@@ -156,7 +165,7 @@ void printEquipment(DatabaseConnector d)
 {
 	ItemTable table = d.getItemsTaken(1);
 
-	for(int i=0; i< table.getLength(); i++)
+	for (int i = 0; i< table.getLength(); i++)
 	{
 		std::cout << table.getId(i) << "\t";
 		std::cout << table.getName(i) << "\t";
@@ -168,9 +177,29 @@ void printEquipment(DatabaseConnector d)
 }
 void terminateEmployee(DatabaseConnector d)
 {
-	d.removeEmployee(someEmployee);
+	std::string user;
+	std::cout << "Enter Username of Employee to be terminated" << endl;
+	getline(std::cin, user);
+	d.removeEmployee(d.getEmployeeId(user));
 }
- void printEmployeeInfo(DatabaseConnector d)
+void printEmployeeInfo(DatabaseConnector d)
 {
 	std::cout << "name: " << d.getEmployeeName(1);//1 should be id
+}
+void showEquipmentList()
+{
+	std::cout << "ID" << "      " << "Name" << endl
+		<< "1" << "      " << "Hammer" << endl
+		<< "2" << "      " << "Wrench" << endl
+		<< "3" << "      " << "Screw driver" << endl
+		<< "4" << "      " << "Hand Saw" << endl
+		<< "5" << "      " << "Nail Gun" << endl
+		<< "6" << "      " << "Drill" << endl
+		<< "7" << "      " << "Table Saw" << endl
+		<< "8" << "      " << "Broom" << endl
+		<< "9" << "      " << "Mop" << endl;
+}
+void initializeDepots()
+{
+
 }
