@@ -8,16 +8,16 @@ void Depot::orderEquipment(int id, std::string name)
 {
 
 }
-bool Depot::checkInventory(std::string name)
+bool Depot::checkInventory(int id)
 {
 	//check inventory for equipment name
 	return false;
 }
-void Depot::addEquipment(std::string name)
+void Depot::addEquipment(int id)
 {
 
 }
-void Depot::removeEquipment(std::string name)
+void Depot::removeEquipment(int id)
 {
 
 }
