@@ -188,7 +188,7 @@ void printEmployeeInfo(DatabaseConnector d)
 }
 void showEquipmentList()
 {
-	std::cout << "ID" << "      " << "Name" << endl
+	/*std::cout << "ID" << "      " << "Name" << endl
 		<< "1" << "      " << "Hammer" << endl
 		<< "2" << "      " << "Wrench" << endl
 		<< "3" << "      " << "Screw driver" << endl
@@ -197,7 +197,21 @@ void showEquipmentList()
 		<< "6" << "      " << "Drill" << endl
 		<< "7" << "      " << "Table Saw" << endl
 		<< "8" << "      " << "Broom" << endl
-		<< "9" << "      " << "Mop" << endl;
+		<< "9" << "      " << "Mop" << endl;*/
+
+	// somthing like this?
+
+	ItemTable table = d.getItemList();
+
+	for (int i = 0; i< table.getLength(); i++)
+	{
+		std::cout << table.getId(i) << "\t";
+		std::cout << table.getName(i) << "\t";
+		std::cout << table.getLocation(i) << "\t";
+		std::cout << table.getDescription(i) << "\t";
+		std::cout << table.getCount(i) << "\t";
+		std::cout << std::endl;
+	}
 }
 void initializeDepots()
 {
