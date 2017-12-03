@@ -151,7 +151,6 @@ ItemTable DatabaseConnector::getItemsTaken(int id)
 		if(result)
 		{
 			const int number = result.num_rows();
-			std::cout << "got rows: " << number << std::endl;
 
 			int *ids = new int[number];
 			std::string *names = new std::string[number];
@@ -300,7 +299,9 @@ int DatabaseConnector::getItemAvailible(int itemId)// this doesn't work at all b
 
 	for(int i=0; i<users.num_rows(); i++)
 	{
-		mysqlpp::Query add(conn);
+		// this needs an overhaul
+		// for now users can only check out one of each item
+		/*mysqlpp::Query add(conn);
 		try
 		{
 			add << "select count( " << itemId << " ) from checkout" << users[i]["id"];
@@ -315,7 +316,8 @@ int DatabaseConnector::getItemAvailible(int itemId)// this doesn't work at all b
 		catch(...)
 		{
 			std::cout << add.error() << std::endl;
-		}
+		}*/
+		number --;
 	}
 	return number;
 }
@@ -408,5 +410,18 @@ void DatabaseConnector::subtractItems(int id, int number)
 		{
 			std::cout << add.error() << std::endl;
 		}
+	}
+}
+void DatabaseConnector::deleteItem(int id)// This returns all of the same items
+{
+	mysqlpp::Query del(conn);
+	try
+	{
+		del << "delete from items where id=" << id;
+		del.exec();
+	}
+	catch(...)
+	{
+		std::cout << del.error() << std::endl;
 	}
 }

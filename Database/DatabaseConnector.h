@@ -27,8 +27,7 @@ public:
 	void newItem(std::string name, std::string description, int numAvailable, std::string location);//adds a new item to the database
 	void addItems(int id, int number);//add [number] items of id [id] to database
 	void subtractItems(int id, int number);//remove [number] items of id [id] from database
-
-	//I should add a delete item function
+	void deleteItem(int id);//delete item from table
 
 private:
 	mysqlpp::Connection *conn;
