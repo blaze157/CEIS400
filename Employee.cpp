@@ -1,6 +1,5 @@
-#include "Equipment.h"
 #include "Employee.h"
-
+bool isLetter(char);
 Employee::Employee()
 {
 
@@ -32,7 +31,7 @@ void Employee::setSkillClass(int sc)
 std::string Employee::printEquipment()
 {
 	std::string output;
-	for (int i = 0; i < equipment.size; i++)
+	for (int i = 0; i < equipment.size(); i++)
 	{
 		output.append(equipment.at(i).getName());
 		output.append(" , ");
@@ -46,7 +45,7 @@ void Employee::checkOutEquipment(Equipment e)
 }
 void Employee::checkInEquipment(Equipment e)
 {
-	for (int i = 0; i < equipment.size; i++)
+	for (int i = 0; i < equipment.size(); i++)
 	{
 		if (equipment.at(i).getName() == e.getName())
 		{
@@ -64,13 +63,13 @@ bool Employee::inputValid(int id, std::string pass)
 	//call IDInUse(id) , check if password meets standards (standards tbd)
 	if (!IDInUse(id))
 	{
-		if (pass.length > 8)
+		if (pass.length() > 8)
 		{
-			for (int i = 0; i < pass.length; i++)
+			for (int i = 0; i < pass.length(); i++)
 			{
 				if (isdigit(pass.at(i)))
 				{
-					for (int j = 0; j < pass.length; j++)
+					for (int j = 0; j < pass.length(); j++)
 					{
 						if (isLetter(pass.at(j)))
 							return true;
