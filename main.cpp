@@ -1,5 +1,6 @@
 #include "Employee.h"
 #include "DatabaseConnector.h"
+#include "ItemTable.h"
 #include "Depot.h"
 #include <vector>
 
@@ -141,21 +142,35 @@ void checkOutEquipment(DatabaseConnector d)
 	int equipmentId;
 	std::cout << "Enter Equipment ID" << endl;
 	std::cin >> equipmentId;
+	d.employeeTakeItem(1, equipmentId);//1 should be id
 	//employees.back().checkOutEquipment();
 }
 void checkInEquipment(DatabaseConnector d)
 {
-
+	int equipmentId;
+	std::cout << "Enter Equipment ID" << endl;
+	std::cin >> equipmentId;
+	d.employeeReturnItem(1, equipmentId);//1 should be id
 }
 void printEquipment(DatabaseConnector d)
 {
+	ItemTable table = d.getItemsTaken(1);
 
+	for(int i=0; i< table.getLength(); i++)
+	{
+		std::cout << table.getId(i) << "\t";
+		std::cout << table.getName(i) << "\t";
+		std::cout << table.getLocation(i) << "\t";
+		std::cout << table.getDescription(i) << "\t";
+		std::cout << table.getCount(i) << "\t";
+		std::cout << std::endl;
+	}
 }
 void terminateEmployee(DatabaseConnector d)
 {
-
+	d.removeEmployee(someEmployee);
 }
  void printEmployeeInfo(DatabaseConnector d)
 {
-
+	std::cout << "name: " << d.getEmployeeName(1);//1 should be id
 }
