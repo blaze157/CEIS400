@@ -265,7 +265,7 @@ ItemTable DatabaseConnector::getItemList()
 	table = new ItemTable;
 	return *table;
 }
-int DatabaseConnector::getItemAvailible(int itemId)// this doesn't work at all but it runs
+int DatabaseConnector::getItemAvailible(int itemId)
 {
 	int number = 0;
 	mysqlpp::StoreQueryResult users;
