@@ -15,4 +15,7 @@ private:
 	std::string name;
 	int ID;
 	double price;
+	int quantity;
+	string location;
+	
 };
