@@ -19,14 +19,18 @@ void checkInEquipment(DatabaseConnector);
 void printEquipment(DatabaseConnector);
 void terminateEmployee(DatabaseConnector);
 void printEmployeeInfo(DatabaseConnector);
-void showEquipmentList();
+void showEquipmentList(DatabaseConnector);
+void initializeDepots(DatabaseConnector);
+
+
 void main()
 {
+	std::cout << "WARNING!!! This version of the application is EXTREMELY unstable, Expect errors and crashes througout!" << endl;
 	bool valid = false;
 	while (!valid)
 	{
 		std::cout << "Enter Username" << endl;
-		cin.ignore();
+		//cin.ignore();
 		getline(std::cin, username);
 		std::cout << "Enter Password" << endl;
 		getline(std::cin, pass);
@@ -36,7 +40,7 @@ void main()
 	{
 		logged = true;
 	}
-	std::cout << "Connecting to Database" << endl;
+	std::cout << "Connecting to Database......This may take minutes" << endl;
 	DatabaseConnector dbc("ceis400", "db4free.net", username, pass);
 	std::cout << "Connected" << endl;
 	Employee employee(dbc.getEmployeeName(dbc.getEmployeeId(username)), pass, dbc.getEmployeeId(username), 3);
@@ -69,7 +73,7 @@ void main()
 				<< "2. Print Employee info" << endl
 				<< "3. Terminate Employee" << endl
 				<< "4. Exit" << endl;
-			std::cin.ignore();
+			//std::cin.ignore();
 			std::cin >> input;
 			switch (input)
 			{
@@ -95,7 +99,6 @@ void main()
 		}
 	}
 }
-
 void createAccount(DatabaseConnector d)
 {
 	DatabaseConnector dbc = d;
@@ -140,7 +143,7 @@ void managerLogin(DatabaseConnector d)
 }
 void checkOutEquipment(DatabaseConnector d)
 {
-	showEquipmentList();
+	showEquipmentList(d);
 	int equipmentId;
 	std::cout << "Enter Equipment ID" << endl;
 	std::cin >> equipmentId;
@@ -163,7 +166,7 @@ void checkInEquipment(DatabaseConnector d)
 }
 void printEquipment(DatabaseConnector d)
 {
-	ItemTable table = d.getItemsTaken(1);
+	ItemTable table = d.getItemsTaken(d.getEmployeeId(username));
 
 	for (int i = 0; i< table.getLength(); i++)
 	{
@@ -186,18 +189,18 @@ void printEmployeeInfo(DatabaseConnector d)
 {
 	std::cout << "name: " << d.getEmployeeName(1);//1 should be id
 }
-void showEquipmentList()
+void showEquipmentList(DatabaseConnector d)
 {
 	/*std::cout << "ID" << "      " << "Name" << endl
-		<< "1" << "      " << "Hammer" << endl
-		<< "2" << "      " << "Wrench" << endl
-		<< "3" << "      " << "Screw driver" << endl
-		<< "4" << "      " << "Hand Saw" << endl
-		<< "5" << "      " << "Nail Gun" << endl
-		<< "6" << "      " << "Drill" << endl
-		<< "7" << "      " << "Table Saw" << endl
-		<< "8" << "      " << "Broom" << endl
-		<< "9" << "      " << "Mop" << endl;*/
+	<< "1" << "      " << "Hammer" << endl
+	<< "2" << "      " << "Wrench" << endl
+	<< "3" << "      " << "Screw driver" << endl
+	<< "4" << "      " << "Hand Saw" << endl
+	<< "5" << "      " << "Nail Gun" << endl
+	<< "6" << "      " << "Drill" << endl
+	<< "7" << "      " << "Table Saw" << endl
+	<< "8" << "      " << "Broom" << endl
+	<< "9" << "      " << "Mop" << endl;*/
 
 	// somthing like this?
 
@@ -213,7 +216,25 @@ void showEquipmentList()
 		std::cout << std::endl;
 	}
 }
-void initializeDepots()
+void initializeDepots(DatabaseConnector d)
 {
-
+	ItemTable table = d.getItemList();
+	std::vector<Equipment> equipment;
+	Depot d1;
+	Depot d2;
+	depots.push_back(d1);
+	depots.push_back(d2);
+	for (int i = 0; i < table.getLength(); i++)
+	{
+		equipment[i] = Equipment();
+		equipment[i].setName(table.getName(i));
+		if (table.getLocation(i) == "main warehouse")
+		{
+			//depots[0].addEquipment(equipment[i]);//make depot.addEquipment accept an equipment object
+		}
+		else if (table.getLocation(i) == "small warehouse")
+		{
+			//depots[1].addEquipment(equipment[i]);//make depot.addEquipment accept an equipment object
+		}
+	}
 }
