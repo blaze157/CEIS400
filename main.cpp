@@ -22,7 +22,17 @@ void printEmployeeInfo(DatabaseConnector);
 void showEquipmentList(DatabaseConnector);
 void initializeDepots(DatabaseConnector);
 
+void main()
+{
+	std::cout << "Connecting to Database......This may take minutes" << endl;
+	DatabaseConnector dbc("ceis400", "db4free.net", "ceis400", "password");
+	std::cout << "Connected" << endl;
+	initializeDepots(dbc);
+	depots[0].printInventory();
+	depots[1].printInventory();
 
+}
+/*
 void main()
 {
 	std::cout << "WARNING!!! This version of the application is EXTREMELY unstable, Expect errors and crashes througout!" << endl;
@@ -99,6 +109,7 @@ void main()
 		}
 	}
 }
+*/
 void createAccount(DatabaseConnector d)
 {
 	DatabaseConnector dbc = d;
@@ -226,15 +237,20 @@ void initializeDepots(DatabaseConnector d)
 	depots.push_back(d2);
 	for (int i = 0; i < table.getLength(); i++)
 	{
-		equipment[i] = Equipment();
+		Equipment e;
+		equipment.push_back(e);
 		equipment[i].setName(table.getName(i));
 		if (table.getLocation(i) == "main warehouse")
 		{
-			//depots[0].addEquipment(equipment[i]);//make depot.addEquipment accept an equipment object
+			depots[0].addEquipment(equipment[i]);//make depot.addEquipment accept an equipment object
 		}
 		else if (table.getLocation(i) == "small warehouse")
 		{
-			//depots[1].addEquipment(equipment[i]);//make depot.addEquipment accept an equipment object
+			depots[1].addEquipment(equipment[i]);//make depot.addEquipment accept an equipment object
 		}
 	}
+}
+void initializeEmployees(DatabaseConnector d)
+{
+	
 }
