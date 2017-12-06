@@ -1,6 +1,8 @@
+ifndef EQUIPMENT_H
+#define EQUIPMENT_H
+
 #include <string>
 using namespace std;
-
 class Equipment
 {
 public:
@@ -15,7 +17,5 @@ private:
 	std::string name;
 	int ID;
 	double price;
-	int quantity;
-	string location;
-	
 };
+#endif
