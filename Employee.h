@@ -1,6 +1,14 @@
+#ifndef EMPLOYEE_H
+#define EMPLOYEE_H
+
+#include <string>
+#include <vector>
+#include "Equipment.h"
+
 class Employee {
 public:
 	Employee();
+	Employee(std::string,std::string, int, int);//name, password, ID, skillclass
 	std::string getName();
 	void setName(std::string);
 	int getID();
@@ -11,7 +19,6 @@ public:
 	void checkOutEquipment(Equipment);
 	void checkInEquipment(Equipment);
 	bool IDInUse(int);
-	bool inputValid(int, std::string); // ID,Password
 
 private:
 	std::string name;
@@ -24,3 +31,4 @@ private:
 
 
 };
+#endif
