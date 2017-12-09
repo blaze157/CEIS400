@@ -21,16 +21,35 @@ void terminateEmployee(DatabaseConnector);
 void printEmployeeInfo(DatabaseConnector);
 void showEquipmentList(DatabaseConnector);
 void initializeDepots(DatabaseConnector);
+void reportItemStolen(DatabaseConnector);
+bool passwordValid(std::string);
+bool isLetter(char);
 
 void main()
 {
-	std::cout << "Connecting to Database......This may take minutes" << endl;
-	DatabaseConnector dbc("ceis400", "db4free.net", "ceis400", "password");
-	std::cout << "Connected" << endl;
-	initializeDepots(dbc);
-	depots[0].printInventory();
-	depots[1].printInventory();
 
+	std::cout << "Connecting to Database......This may take minutes" << endl;
+	DatabaseConnector dbc("ceis400", "ceis400.ctgqrhaucemx.us-east-2.rds.amazonaws.com", "ceis400", "password");
+	std::cout << "Connected" << endl;
+	//initializeDepots(dbc);
+
+	//createAccount(dbc);
+	/*
+	dbc.newItem("Hammer", "Standard Hammer", 3, "small warehouse");
+	dbc.newItem("Wrench", "Standard Wrench", 3, "small warehouse");
+	dbc.newItem("Broom", "Standard Broom", 3, "small warehouse");
+	dbc.newItem("Nail Gun", "Electric Nail Gun", 3, "small warehouse");
+	dbc.newItem("Hammer", "Standard Hammer", 10, "main warehouse");
+	dbc.newItem("Wrench", "Standard Wrench", 10, "main warehouse");
+	dbc.newItem("Broom", "Standard Broom", 10, "main warehouse");
+	dbc.newItem("Nail Gun", "Electric Nail Gun", 10, "main warehouse");
+	*/
+
+	//showEquipmentList(dbc);
+	initializeDepots(dbc);
+	printEquipment(dbc);
+	//depots[0].printInventory();
+	//depots[1].printInventory();
 }
 /*
 void main()
@@ -121,14 +140,20 @@ void createAccount(DatabaseConnector d)
 	std::cout << "Enter Name (first last)" << endl;
 	cin.ignore(1000, '\n');
 	getline(std::cin, name);
-	std::cout << "Enter Password" << endl;
-	getline(std::cin, pass);
+	while (true)
+	{
+		std::cout << "Enter Password" << endl;
+		getline(std::cin, pass);
+		if (passwordValid(pass))
+			break;
+		std::cout << "Password must be 8 characters long, and contain both a number and a letter" << endl;
+	}
 	std::cout << "Enter Username" << endl;
 	getline(std::cin, user);
 	std::cout << "Enter Skill Class" << endl;
 	std::cin >> skill;
 	std::cout << "creating account" << endl;
-	dbc.newEmployee(user, name, pass);
+	dbc.newEmployee(user, name, pass,skill);
 	std::cout << "account created" << endl;
 	id = dbc.getEmployeeId(user);
 	Employee e(name, pass, id, skill);
@@ -154,18 +179,21 @@ void managerLogin(DatabaseConnector d)
 }
 void checkOutEquipment(DatabaseConnector d)
 {
-	showEquipmentList(d);
+	//showEquipmentList(d);
 	int equipmentId;
+	int num;
 	std::cout << "Enter Equipment ID" << endl;
 	std::cin >> equipmentId;
+	std::cout << "Enter quantity of equipment" << endl;
+	std::cin >> num;
 	if (depots[0].checkInventory(equipmentId))
 	{
-		d.employeeTakeItem(d.getEmployeeId(username), equipmentId);
+		d.employeeTakeItem(d.getEmployeeId(username), equipmentId, num);
 		depots[0].removeEquipment(equipmentId);
 	}
 	else if (depots[1].checkInventory(equipmentId))
 	{
-		d.employeeTakeItem(d.getEmployeeId(username), equipmentId);
+		d.employeeTakeItem(d.getEmployeeId(username), equipmentId,num);
 	}
 }
 void checkInEquipment(DatabaseConnector d)
@@ -177,7 +205,7 @@ void checkInEquipment(DatabaseConnector d)
 }
 void printEquipment(DatabaseConnector d)
 {
-	ItemTable table = d.getItemsTaken(d.getEmployeeId(username));
+	CheckoutTable table = d.getItemsTaken(d.getEmployeeId(username));
 
 	for (int i = 0; i< table.getLength(); i++)
 	{
@@ -202,18 +230,6 @@ void printEmployeeInfo(DatabaseConnector d)
 }
 void showEquipmentList(DatabaseConnector d)
 {
-	/*std::cout << "ID" << "      " << "Name" << endl
-	<< "1" << "      " << "Hammer" << endl
-	<< "2" << "      " << "Wrench" << endl
-	<< "3" << "      " << "Screw driver" << endl
-	<< "4" << "      " << "Hand Saw" << endl
-	<< "5" << "      " << "Nail Gun" << endl
-	<< "6" << "      " << "Drill" << endl
-	<< "7" << "      " << "Table Saw" << endl
-	<< "8" << "      " << "Broom" << endl
-	<< "9" << "      " << "Mop" << endl;*/
-
-	// somthing like this?
 
 	ItemTable table = d.getItemList();
 
@@ -229,12 +245,11 @@ void showEquipmentList(DatabaseConnector d)
 }
 void initializeDepots(DatabaseConnector d)
 {
+	Depot d1, d2;
+	depots.push_back(d1); depots.push_back(d2);
 	ItemTable table = d.getItemList();
 	std::vector<Equipment> equipment;
-	Depot d1;
-	Depot d2;
-	depots.push_back(d1);
-	depots.push_back(d2);
+
 	for (int i = 0; i < table.getLength(); i++)
 	{
 		Equipment e;
@@ -253,4 +268,38 @@ void initializeDepots(DatabaseConnector d)
 void initializeEmployees(DatabaseConnector d)
 {
 	
+}
+bool passwordValid(std::string p)
+{
+	if (p.length() >= 8)
+	{
+		for (int i = 0; i < p.length(); i++)
+		{
+			if (isdigit(p.at(i)))
+			{
+				for (int j = 0; j < p.length(); j++)
+				{
+					if (isLetter(p.at(j)))
+						return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+bool isLetter(char c)
+{
+	if (toupper(c) == 'A' || toupper(c) == 'B' || toupper(c) == 'C' || toupper(c) == 'D' ||
+		toupper(c) == 'E' || toupper(c) == 'F' || toupper(c) == 'G' || toupper(c) == 'H' ||
+		toupper(c) == 'I' || toupper(c) == 'J' || toupper(c) == 'K' || toupper(c) == 'L' ||
+		toupper(c) == 'M' || toupper(c) == 'N' || toupper(c) == 'O' || toupper(c) == 'P' ||
+		toupper(c) == 'Q' || toupper(c) == 'R' || toupper(c) == 'S' || toupper(c) == 'T' ||
+		toupper(c) == 'U' || toupper(c) == 'V' || toupper(c) == 'W' || toupper(c) == 'X' ||
+		toupper(c) == 'Y' || toupper(c) == 'Z')
+		return true;
+	return false;
+}
+void reportItemStolen(DatabaseConnector d)
+{
+
 }
