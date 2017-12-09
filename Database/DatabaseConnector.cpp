@@ -53,8 +53,26 @@ std::string DatabaseConnector::getEmployeeName(int id)
 		std::cout << select.error() << std::endl;
 	}
 }
+int DatabaseConnector::getEmployeeSkill(int id)
+{
+	mysqlpp::Query select(conn);
+	try
+	{
+		select << "select skill from employees where id=" << id;
+		mysqlpp::StoreQueryResult result = select.store();
 
-void DatabaseConnector::newEmployee(std::string username, std::string name, std::string password)
+		if(result)
+		{
+			return result[0]["skill"];
+		}
+	}
+	catch(...)
+	{
+		std::cout << select.error() << std::endl;
+	}
+}
+
+void DatabaseConnector::newEmployee(std::string username, std::string name, std::string password, int skill)
 {
 	//TODO when same username is given an extra entry is inserted into employees table
 	mysqlpp::Query create(conn);
@@ -82,7 +100,7 @@ void DatabaseConnector::newEmployee(std::string username, std::string name, std:
 	mysqlpp::Query insert(conn);
 	try
 	{
-		insert << "insert into employees (username, name) values('"<< username << "', '" << name << "')";
+		insert << "insert into employees (username, name, skill) values('"<< username << "', '"<< name << "', " << skill << ")";
 		insert.exec();
 	}
 	catch(...)
@@ -137,44 +155,19 @@ void DatabaseConnector::removeEmployee(int id)
 	}
 }
 
-ItemTable DatabaseConnector::getItemsTaken(int id)
+CheckoutTable DatabaseConnector::getItemsTaken(int id)
 {
-	ItemTable* table;
-
 	mysqlpp::Query select(conn);
 	try
 	{
-		select << "select checkout" << id << ".id, items.name, items.location, items.description, items.numAvailable " <<
+		select << "select checkout" << id << ".id, checkout" << id << ".missing, items.name, items.location, items.description, checkout" << id << ".count, items.skill " <<
 		"from checkout" << id << 
 		" left join items on checkout" << id << ".id = items.id";
 		mysqlpp::StoreQueryResult result = select.store();
+		
 		if(result)
 		{
-			const int number = result.num_rows();
-
-			int *ids = new int[number];
-			std::string *names = new std::string[number];
-			std::string *descriptions = new std::string[number];
-			std::string *locations = new std::string[number];
-			int *count = new int[number];
-
-			for(int i=0; i<number; i++)
-			{
-				ids[i] = result[i]["id"];
-				result[i]["name"].to_string(names[i]);
-				result[i]["location"].to_string(locations[i]);
-				result[i]["description"].to_string(descriptions[i]);
-				count[i] = result[i]["numAvailable"];
-			}
-
-			table = new ItemTable(ids, names, descriptions, locations, count, number);
-			delete[] ids;
-			delete[] names;
-			delete[] descriptions;
-			delete[] locations;
-			delete[] count;
-
-			return *table;
+			return CheckoutTable::genTable(result);
 		}
 	}
 	catch(...)
@@ -182,15 +175,15 @@ ItemTable DatabaseConnector::getItemsTaken(int id)
 		std::cout << "SQL error getItemsTaken: " << select.error() << std::endl;
 	}
 
-	table = new ItemTable;
-	return *table;
+	CheckoutTable blankTable;
+	return blankTable;
 }
-void DatabaseConnector::employeeTakeItem(int employeeId, int itemId)// Why didn't I put a count on this?
+void DatabaseConnector::employeeTakeItem(int employeeId, int itemId, int count)
 {
 	mysqlpp::Query insert(conn);
 	try
 	{
-		insert << "insert into checkout" << employeeId << " (id) values (" << itemId << ")";
+		insert << "insert into checkout" << employeeId << " (id, count, missing) values (" << itemId << ", " << count << ", 0)";
 		insert.exec();
 	}
 	catch(...)
@@ -231,30 +224,7 @@ ItemTable DatabaseConnector::getItemList()
 
 		if(result)
 		{
-			int number = result.num_rows();
-
-			int *ids = new int[number];
-			std::string *names = new std::string[number];
-			std::string *descriptions = new std::string[number];
-			std::string *locations = new std::string[number];
-			int *count = new int[number];
-
-			for(int i=0; i<number; i++)
-			{
-				ids[i] = result[i]["id"];
-				result[i]["name"].to_string(names[i]);
-				result[i]["description"].to_string(descriptions[i]);
-				result[i]["location"].to_string(locations[i]);
-				count[i] = result[i]["numAvailable"];
-			}
-
-			table = new ItemTable(ids, names, descriptions, locations, count, number);
-			delete[] ids;
-			delete[] names;
-			delete[] descriptions;
-			delete[] locations;
-			delete[] count;
-			return *table;
+			return ItemTable::genTable(result);
 		}
 	}
 	catch(...)
@@ -322,12 +292,12 @@ int DatabaseConnector::getItemAvailible(int itemId)
 	return number;
 }
 
-void DatabaseConnector::newItem(std::string name, std::string description, int numAvailable, std::string location)
+void DatabaseConnector::newItem(std::string name, std::string description, int numAvailable, std::string location, int skill)
 {
 	mysqlpp::Query insert(conn);
 	try
 	{
-		insert << "insert into items (name, description, numAvailable, location) values ('" << name << "', '" << description << "', " << numAvailable << ", '" << location << "')";
+		insert << "insert into items (name, description, numAvailable, location, skill) values ('" << name << "', '" << description << "', " << numAvailable << ", '" << location << "', " << skill << ")";
 		insert.exec();
 	}
 	catch(...)

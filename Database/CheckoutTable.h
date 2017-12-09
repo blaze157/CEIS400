@@ -1,11 +1,11 @@
-//Used to store lists of items
-#ifndef ITEM_TABLE
-#define ITEM_TABLE
+//Used to store lists of checkout items
+#ifndef CHECKOUT_TABLE
+#define CHECKOUT_TABLE
 
 #include <iostream>
 #include <mysql++/mysql++.h>
 
-class ItemTable
+class CheckoutTable
 {
 private:
 	int* ids;
@@ -14,13 +14,14 @@ private:
 	std::string* locations;
 	int* skills;
 	int* counts;
+	bool* missings;
 
 	int number;
 
 public:
-	ItemTable();
-	ItemTable(int* ids, std::string* names, std::string* descriptions, std::string* locations, int* skills, int* counts, int number);
-	virtual ~ItemTable();
+	CheckoutTable();
+	CheckoutTable(int* ids, std::string* names, std::string* descriptions, std::string* locations, int* skills, int* counts, bool* missings, int number);
+	virtual ~CheckoutTable();
 
 	int getLength();//get number of elements in table
 	int getId(int pos);//get id at position [pos]
@@ -29,8 +30,9 @@ public:
 	std::string getLocation(int pos);//get item location at position [pos]
 	int getSkill(int pos);//get id at position [pos]
 	int getCount(int pos);//get count of items at position [pos]
+	bool getMissing(int pos);//get count of items at position [pos]
 
-	static ItemTable genTable(mysqlpp::StoreQueryResult result); 
+	static CheckoutTable genTable(mysqlpp::StoreQueryResult result); 
 };
 
 #endif
