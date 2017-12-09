@@ -1,8 +1,15 @@
 #include "Employee.h"
-bool isLetter(char);
+
 Employee::Employee()
 {
 
+}
+Employee::Employee(std::string NAME, std::string PASS, int id, int skill)
+{
+	name = NAME;
+	password = PASS;
+	ID = id;
+	skillClass = skill;
 }
 int Employee::getID()
 {
@@ -56,39 +63,5 @@ void Employee::checkInEquipment(Equipment e)
 bool Employee::IDInUse(int id)
 {
 	//need to query database to see if id is in use
-	return false;
-}
-bool Employee::inputValid(int id, std::string pass)
-{
-	//call IDInUse(id) , check if password meets standards (standards tbd)
-	if (!IDInUse(id))
-	{
-		if (pass.length() > 8)
-		{
-			for (int i = 0; i < pass.length(); i++)
-			{
-				if (isdigit(pass.at(i)))
-				{
-					for (int j = 0; j < pass.length(); j++)
-					{
-						if (isLetter(pass.at(j)))
-							return true;
-					}
-				}
-			}
-		}
-	}
-	return false;
-}
-bool isLetter(char c)
-{
-	if (toupper(c) == 'A' || toupper(c) == 'B' || toupper(c) == 'C' || toupper(c) == 'D' ||
-		toupper(c) == 'E' || toupper(c) == 'F' || toupper(c) == 'G' || toupper(c) == 'H' ||
-		toupper(c) == 'I' || toupper(c) == 'J' || toupper(c) == 'K' || toupper(c) == 'L' ||
-		toupper(c) == 'M' || toupper(c) == 'N' || toupper(c) == 'O' || toupper(c) == 'P' ||
-		toupper(c) == 'Q' || toupper(c) == 'R' || toupper(c) == 'S' || toupper(c) == 'T' ||
-		toupper(c) == 'U' || toupper(c) == 'V' || toupper(c) == 'W' || toupper(c) == 'X' ||
-		toupper(c) == 'Y' || toupper(c) == 'Z')
-		return true;
 	return false;
 }
