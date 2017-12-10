@@ -3,7 +3,7 @@
 
 ItemTable::ItemTable()
 {}
-ItemTable::ItemTable(int* ids, std::string* names, std::string* descriptions, std::string* locations, int* skills, int* counts, int number)
+ItemTable::ItemTable(int* ids, std::string* names, std::string* descriptions, std::string* locations, int* skills, int* counts, int* availables, int number)
 {
 	this->ids = new int[number];
 	this->names = new std::string[number];
@@ -11,6 +11,7 @@ ItemTable::ItemTable(int* ids, std::string* names, std::string* descriptions, st
 	this->locations = new std::string[number];
 	this->skills = new int[number];
 	this->counts = new int[number];
+	this->availables = new int[number];
 	this->number = number;
 
 	for(int i=0; i<number; i++)
@@ -21,6 +22,7 @@ ItemTable::ItemTable(int* ids, std::string* names, std::string* descriptions, st
 		this->locations[i] = locations[i];
 		this->skills[i] = skills[i];
 		this->counts[i] = counts[i];
+		this->availables[i] = availables[i];
 	}
 }
 ItemTable::~ItemTable()
@@ -31,6 +33,7 @@ ItemTable::~ItemTable()
 	delete[] locations;
 	delete[] skills;
 	delete[] counts;
+	delete[] availables;
 }
 
 int ItemTable::getLength()
@@ -79,9 +82,16 @@ int ItemTable::getCount(int pos)
 	else
 		return 0;
 }
+int ItemTable::getAvailable(int pos)
+{
+	if(pos>=0 && pos<number)
+		return availables[pos];
+	else
+		return 0;
+}
 
 
-ItemTable ItemTable::genTable(mysqlpp::StoreQueryResult result)
+ItemTable ItemTable::genTable(mysqlpp::StoreQueryResult result, int *availables)
 {
 	int number = result.num_rows();
 
@@ -103,7 +113,7 @@ ItemTable ItemTable::genTable(mysqlpp::StoreQueryResult result)
 	}
 
 	ItemTable* table;
-	table = new ItemTable(ids, names, descriptions, locations, skills, counts, number);
+	table = new ItemTable(ids, names, descriptions, locations, skills, counts, availables, number);
 	delete[] ids;
 	delete[] names;
 	delete[] descriptions;

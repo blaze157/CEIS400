@@ -111,7 +111,7 @@ void DatabaseConnector::newEmployee(std::string username, std::string name, std:
 	mysqlpp::Query table(conn);
 	try
 	{
-		table << "create table checkout"<< getEmployeeId(username) <<"(itemId int)";
+		table << "create table checkout"<< getEmployeeId(username) <<"(id int, missing bool, count int)";
 		table.exec();
 	}
 	catch(...)
@@ -204,6 +204,93 @@ void DatabaseConnector::employeeReturnItem(int employeeId, int itemId)// This re
 		std::cout << del.error() << std::endl;
 	}
 }
+bool DatabaseConnector::getProblemEmployee(int id)
+{
+	mysqlpp::Query select(conn);
+	try
+	{
+		select << "select missing from checkout" << id << " ";
+		mysqlpp::StoreQueryResult result = select.store();
+		
+		if(result)
+		{
+			int counter = 0;
+			for(int i=0; i<result.num_rows(); i++)
+			{
+				if(result[i]["missing"])
+				{
+					counter++;
+				}
+			}
+			if(counter>=2)
+			{
+				return true;
+			}
+		}
+	}
+	catch(...)
+	{
+		std::cout << "SQL error getProblemEmployee: " << select.error() << std::endl;
+	}
+
+	return false;
+}
+EmployeeTable DatabaseConnector::getEmployees()
+{
+	mysqlpp::Query select(conn);
+	try
+	{
+		select << "select * from employees";
+		mysqlpp::StoreQueryResult result = select.store();
+		
+		if(result)
+		{
+			bool *problemEmployees = new bool[result.num_rows()];
+
+			for(int i=0; i<result.num_rows(); i++)
+			{
+				problemEmployees[i] = getProblemEmployee(result[i]["id"]);
+			}
+
+			return EmployeeTable::genTable(result, problemEmployees);
+		}
+	}
+	catch(...)
+	{
+		std::cout << "SQL error getEmployees: " << select.error() << std::endl;
+	}
+
+	EmployeeTable blankTable;
+	return blankTable;
+}
+
+
+void DatabaseConnector::reportMissing(int employeeId, int itemId)
+{
+	mysqlpp::Query add(conn);
+	try
+	{
+		add << "update checkout" << employeeId << " set missing=true where id=" << itemId;
+		add.exec();
+	}
+	catch(...)
+	{
+		std::cout << add.error() << std::endl;
+	}
+}
+void DatabaseConnector::returnMissing(int employeeId, int itemId)
+{
+	mysqlpp::Query add(conn);
+	try
+	{
+		add << "update checkout" << employeeId << " set missing=false where id=" << itemId;
+		add.exec();
+	}
+	catch(...)
+	{
+		std::cout << add.error() << std::endl;
+	}
+}
 
 
 std::string DatabaseConnector::getItemLocation(int itemId)
@@ -224,7 +311,14 @@ ItemTable DatabaseConnector::getItemList()
 
 		if(result)
 		{
-			return ItemTable::genTable(result);
+			int *availables = new int[result.num_rows()];
+
+			for(int i=0; i<result.num_rows(); i++)
+			{
+				availables[i] = getItemAvailible(result[i]["id"]);
+			}
+
+			return ItemTable::genTable(result, availables);
 		}
 	}
 	catch(...)
@@ -269,25 +363,22 @@ int DatabaseConnector::getItemAvailible(int itemId)
 
 	for(int i=0; i<users.num_rows(); i++)
 	{
-		// this needs an overhaul
-		// for now users can only check out one of each item
-		/*mysqlpp::Query add(conn);
+		mysqlpp::Query add(conn);
 		try
 		{
-			add << "select count( " << itemId << " ) from checkout" << users[i]["id"];
+			add << "select count from checkout" << users[i]["id"] << " where id=" << itemId ;
 			mysqlpp::StoreQueryResult result = add.store();
 
-			if(result)
+			if(result && result.num_rows() >= 1)
 			{
-				int numUser = result[0][0];
+				int numUser = result[0]["count"];
 				number -= numUser;
 			}
 		}
 		catch(...)
 		{
 			std::cout << add.error() << std::endl;
-		}*/
-		number --;
+		}
 	}
 	return number;
 }

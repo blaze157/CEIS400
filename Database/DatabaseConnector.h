@@ -4,6 +4,7 @@
 #include <mysql++/mysql++.h>
 #include "ItemTable.h"
 #include "CheckoutTable.h"
+#include "EmployeeTable.h"
 #include <string>
 
 class DatabaseConnector
@@ -21,6 +22,11 @@ public:
 	CheckoutTable getItemsTaken(int id);//a list of the items that have been checked out by [id]
 	void employeeTakeItem(int employeeId, int itemId, int count);//check out item
 	void employeeReturnItem(int employeeId, int itemId);//put back item
+	bool getProblemEmployee(int id);
+	EmployeeTable getEmployees();
+
+	void reportMissing(int employeeId, int itemId);
+	void returnMissing(int employeeId, int itemId);
 
 	//item functions
 	std::string getItemLocation(int itemId);//get location from id
